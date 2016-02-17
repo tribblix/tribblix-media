@@ -23,6 +23,8 @@
 # Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+# Copyright 2016 Peter C. Tribble <peter.tribble@gmail.com>
+#
 
 # Set up the builtin commands.
 builtin cd
@@ -129,25 +131,6 @@ sun4u_libc_psr_mount() {
 				    /platform/$ARCH/lib/sparcv9/libc_psr.so.1
 			fi
 		fi
-	fi
-}
-
-#
-# Update runtime linker cache
-#
-update_linker_cache()
-{
-	if [ -f /etc/crle.conf ]
-	then
-
-		PATH=/usr/foss/bin:/usr/foss/firefox/bin:/usr/foss/thunderbird/bin:/sbin:/usr/sbin:/usr/bin:/usr/ccs/bin:/usr/X11R6/bin:/opt/DTT/bin
-		export PATH
-
-		LD_LIBRARY_PATH=/usr/foss/lib:/lib:/usr/lib:/usr/sfw/lib:/usr/X11R6/lib
-		export LD_LIBRARY_PATH
-
-		. /etc/crle.conf
-		#/usr/bin/crle $CRLE_OPTS
 	fi
 }
 
