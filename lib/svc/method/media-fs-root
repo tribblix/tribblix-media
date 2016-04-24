@@ -130,20 +130,6 @@ echo "Done mounting /usr filesystem" > /dev/msglog
 fi
 
 #
-# Also mount /boot now so that things like keymap.sh can access
-# boot properties through eeprom.  Readonly isn't required because
-# /boot (and other pcfs filesystems) aren't fsck'ed at boot yet.
-# Also, we don't account for caching /boot as it must be on a local
-# disk.  So what's in vfstab is fine as it stands; just look to see
-# if it's there and avoid the mount if not.
-#
-readvfstab "/boot" < $vfstab
-
-if [ -n "$mountp" ]; then
-	mountfs - /boot $fstype $mntopts - || exit $SMF_EXIT_ERR_FATAL
-fi
-
-#
 # Update kernel driver.conf cache with any additional driver.conf
 # files found on /usr, and device permissions from /etc/minor_perm.
 #
