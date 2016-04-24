@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2012-2014 Peter C. Tribble.
+# Copyright 2012-2016 Peter C. Tribble.
 #
 # Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
@@ -135,6 +135,12 @@ else
 fi
 
 #
+# Are we a single image? If we haven't got /usr already, try
+# and mount it from solaris.zlib on the media
+#
+if [ ! -f /usr/lib/zap/zap ]; then
+
+#
 # Translate to valid url - it is dummy operation for now
 # since it is assumed that complete and valid URL was provided
 #
@@ -168,23 +174,6 @@ then
 	exit $SMF_EXIT_ERR_FATAL
 fi
 
-# download the install.conf file to get the service name for SPARC
-if [ "$ISA_INFO" = "sparc" ]; then
-	install_conf="$url/$INSTALL_CONF_FILE"
-	$WGET $install_conf -O $INSTALL_CONF_SPEC > \
-	    /dev/msglog 2> /dev/msglog
-	if [ $? -ne 0 ]; then
-		echo "Could not obtain $install_conf file from" \
-		    "the install server" > /dev/msglog
-		echo "Please verify that the install server is" \
-		    "correctly configured and reachable from" \
-		    "the client" > /dev/msglog
-		exit $SMF_EXIT_ERR_FATAL
-	fi
-fi
-
-# Lofi mount downloaded archive to /usr
-
 #
 # Can not mount solaris.zlib using just the mount command,
 # because the mount command enforces nosetuid, and /usr
@@ -210,6 +199,26 @@ then
 fi
 
 echo "Done mounting /usr filesystem" > /dev/msglog
+
+#
+# end of if [ ! -f /usr/lib/zap/zap ]
+#
+fi
+
+# download the install.conf file to get the service name for SPARC
+if [ "$ISA_INFO" = "sparc" ]; then
+	install_conf="$url/$INSTALL_CONF_FILE"
+	$WGET $install_conf -O $INSTALL_CONF_SPEC > \
+	    /dev/msglog 2> /dev/msglog
+	if [ $? -ne 0 ]; then
+		echo "Could not obtain $install_conf file from" \
+		    "the install server" > /dev/msglog
+		echo "Please verify that the install server is" \
+		    "correctly configured and reachable from" \
+		    "the client" > /dev/msglog
+		exit $SMF_EXIT_ERR_FATAL
+	fi
+fi
 
 #
 # If requested, enable remote access via ssh

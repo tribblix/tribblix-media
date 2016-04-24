@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2012-2014 Peter C. Tribble.
+# Copyright 2012-2016 Peter C. Tribble.
 #
 # Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
@@ -89,6 +89,12 @@ do
 	fi
 done
 
+#
+# Are we a single image? If we haven't got /usr already, try
+# and mount it from solaris.zlib on the media
+#
+if [ ! -f /usr/lib/zap/zap ]; then
+
 # Check if mount of /.cdrom failed.
 $MOUNT | grep "^/.cdrom"
 if [ $? -ne 0 ]; then
@@ -117,6 +123,11 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Done mounting /usr filesystem" > /dev/msglog
+
+#
+# end of if [ ! -f /usr/lib/zap/zap ]
+#
+fi
 
 #
 # Also mount /boot now so that things like keymap.sh can access
