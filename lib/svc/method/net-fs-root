@@ -28,6 +28,8 @@
 # Make sure that the libraries essential to this stage of booting can be found.
 LD_LIBRARY_PATH=/lib; export LD_LIBRARY_PATH
 
+builtin rm
+
 DEVPROP=/sbin/devprop
 SED=/usr/bin/sed
 CUT=/usr/bin/cut
@@ -52,7 +54,7 @@ SOLARIS_ZLIB="solaris.zlib"
 
 ISA_INFO=`/sbin/uname -p`
 
-echo "Preparing network booted image for use" > /dev/msglog
+echo "\rPreparing image for use" >/dev/msglog
 
 # Prime the network
 /sbin/dhcpagent -a
@@ -183,17 +185,13 @@ fi
 # with the changes to make lofi work from within a zone, a
 # properly populated /dev tree is required to use simply "mount"
 #
-
-usr_lofi_dev=`/usr/sbin/lofiadm -a /tmp/$SOLARIS_ZLIB`
-if [ $? -ne 0 -o -z "$usr_lofi_dev" ]
-then
+usr_lofi_dev=$(/usr/sbin/lofiadm -a /tmp/$SOLARIS_ZLIB)
+if [ $? -ne 0 -o -z "$usr_lofi_dev" ]; then
 	echo "lofiadm of /usr FAILED!" > /dev/msglog
 	exit $SMF_EXIT_ERR_FATAL
 fi
-
-$MOUNT -F hsfs -o ro $usr_lofi_dev /usr
-if [ $? -ne 0 ]
-then
+$MOUNT -F hsfs -o ro ${usr_lofi_dev} /usr
+if [ $? -ne 0 ]; then
 	echo "/usr MOUNT FAILED!" > /dev/msglog
 	exit $SMF_EXIT_ERR_FATAL
 fi
@@ -205,46 +203,13 @@ echo "Done mounting /usr filesystem" > /dev/msglog
 #
 fi
 
-# download the install.conf file to get the service name for SPARC
-if [ "$ISA_INFO" = "sparc" ]; then
-	install_conf="$url/$INSTALL_CONF_FILE"
-	$WGET $install_conf -O $INSTALL_CONF_SPEC > \
-	    /dev/msglog 2> /dev/msglog
-	if [ $? -ne 0 ]; then
-		echo "Could not obtain $install_conf file from" \
-		    "the install server" > /dev/msglog
-		echo "Please verify that the install server is" \
-		    "correctly configured and reachable from" \
-		    "the client" > /dev/msglog
-		exit $SMF_EXIT_ERR_FATAL
-	fi
-fi
-
-#
-# If requested, enable remote access via ssh
-#
-if [ $ISA_INFO = "sparc" ] ; then
-	AI_ENABLE_SSH=`$GREP "^livessh" $INSTALL_CONF_SPEC |
-	    $CUT -d'=' -f2`
-else
-	AI_ENABLE_SSH=`$DEVPROP livessh`
-fi
-
-if [ "$AI_ENABLE_SSH" = "enable" ]; then
-	# generate ssh keys
-	/lib/svc/method/sshd -c
-
-	# enabled ssh server
-	/usr/sbin/svcadm enable network/ssh
-fi
-
 #
 # Update kernel driver.conf cache with any additional driver.conf
 # files found on /usr, and device permissions from /etc/minor_perm.
 #
 /usr/sbin/devfsadm -I -P
 
-[ -f /etc/.dynamic_routing ] && /usr/bin/rm -f /etc/.dynamic_routing
+[ -f /etc/.dynamic_routing ] && rm -f /etc/.dynamic_routing
 
 #
 # Set up the optimized libc mounts
@@ -280,6 +245,52 @@ fi
 #
 apply_platform_profile
 
-/usr/bin/rm -f /etc/svc/repository-boot*
+rm -f /etc/svc/repository-boot*
 
-exit 0
+# download the install.conf file to get the service name for SPARC
+if [ "$ISA_INFO" = "sparc" ]; then
+	install_conf="$url/$INSTALL_CONF_FILE"
+	$WGET $install_conf -O $INSTALL_CONF_SPEC > \
+	    /dev/msglog 2> /dev/msglog
+	if [ $? -ne 0 ]; then
+		echo "Could not obtain $install_conf file from" \
+		    "the install server" > /dev/msglog
+		echo "Please verify that the install server is" \
+		    "correctly configured and reachable from" \
+		    "the client" > /dev/msglog
+		exit $SMF_EXIT_ERR_FATAL
+	fi
+fi
+
+# Determine if remote access via ssh should be enabled
+if [ $ISA_INFO = "sparc" ] ; then
+	livessh=`$GREP "^livessh" $INSTALL_CONF_SPEC |
+	    $CUT -d'=' -f2`
+else
+	livessh=`$DEVPROP livessh`
+fi
+
+#
+# Set up the terminal correctly for prompting
+#
+TERM=sun-color
+export TERM
+
+#
+# set desktop language to default of English
+# if requested via GRUB menu selection:
+#     set keyboard layout to default of English
+#     create keys and enable ssh
+# else
+#     Ask user to configure Keyboard Layout
+#
+/usr/sbin/set_lang default
+if [ "$livessh" = "enable" ]; then
+    /usr/bin/kbd -s US-English
+    /lib/svc/method/sshd -c
+    /usr/sbin/svcadm enable network/ssh
+else
+    /usr/bin/kbd -s </dev/console >/dev/console 2>&1
+fi
+
+exit $SMF_EXIT_OK
