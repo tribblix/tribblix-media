@@ -277,14 +277,12 @@ TERM=sun-color
 export TERM
 
 #
-# set desktop language to default of English
 # if requested via GRUB menu selection:
 #     set keyboard layout to default of English
 #     create keys and enable ssh
 # else
 #     Ask user to configure Keyboard Layout
 #
-/usr/sbin/set_lang default
 if [ "$livessh" = "enable" ]; then
     /usr/bin/kbd -s US-English
     /lib/svc/method/sshd -c
