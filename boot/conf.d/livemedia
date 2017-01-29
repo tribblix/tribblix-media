@@ -1,0 +1,7 @@
+boot_archive_load="YES"
+boot_archive_type="rootfs"
+boot_archive_name="/platform/i86pc/boot_archive"
+
+boot_archive.hash_load="NO"
+boot_archive.hash_type="hash"
+boot_archive.hash_name="/platform/i86pc/${ISADIR}/boot_archive.hash"
