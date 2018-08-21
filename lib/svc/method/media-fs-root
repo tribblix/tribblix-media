@@ -52,8 +52,8 @@ volsetid=$( < "/.volsetid" )
 echo "\rPreparing image for use" >/dev/msglog
 
 # Determine if any of the USB devices contains a UFS filesystem.
-# For devices that do, attempt to mount them to see if the 
-# compressed /usr filesystem exists
+# For devices that do, attempt to mount them to see if the .volsetid
+# file exists and matches the root we're booted from
 
 /sbin/listusb | while read dev rdev
 do
@@ -63,13 +63,9 @@ do
 		if [[ "$volsetid" != "$( < "/.cdrom/.volsetid" )" ]]; then
 			/sbin/umount -f $dev
 			continue
-		fi
-		if [ -f /.cdrom/$SOLARIS_ZLIB ]; then
+		else
 			echo "" > /.liveusb
 			break
-		else
-			/sbin/umount -f $dev
-			continue
 		fi
 	fi
 done
