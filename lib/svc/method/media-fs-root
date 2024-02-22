@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2012-2016 Peter C. Tribble.
+# Copyright 2012-2024 Peter C. Tribble.
 #
 # Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
@@ -51,7 +51,7 @@ volsetid=$( < "/.volsetid" )
 
 echo "\rPreparing image for use" >/dev/msglog
 
-# Determine if any of the USB devices contains a UFS filesystem.
+# Determine if any USB device contains a UFS or HSFS filesystem.
 # For devices that do, attempt to mount them to see if the .volsetid
 # file exists and matches the root we're booted from
 
@@ -60,6 +60,17 @@ do
 	/usr/lib/fs/ufs/fstyp $rdev 2>&1 | grep "^ufs$"
 	if [ $? -eq 0 ]; then
 		$MOUNT -F ufs -o nologging,noatime $dev /.cdrom || break
+		if [[ "$volsetid" != "$( < "/.cdrom/.volsetid" )" ]]; then
+			/sbin/umount -f $dev
+			continue
+		else
+			echo "" > /.liveusb
+			break
+		fi
+	fi
+	/usr/lib/fs/hsfs/fstyp $rdev 2>&1 | grep "^hsfs$"
+	if [ $? -eq 0 ]; then
+		$MOUNT -F hsfs -o ro $dev /.cdrom || break
 		if [[ "$volsetid" != "$( < "/.cdrom/.volsetid" )" ]]; then
 			/sbin/umount -f $dev
 			continue
