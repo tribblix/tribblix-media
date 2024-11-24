@@ -26,7 +26,7 @@
 
 /*
  * Live CD's boot_archive contains a minimal set of utilities under /usr and
- * devfsadm isn't there. The smf service live-fs-root bootstaps the process
+ * devfsadm isn't there. The smf service live-fs-root bootstraps the process
  * by locating the CDROM device and mounting the compressed /usr and /opt
  * to provide a fully functioning system. To mount these file systems the
  * CDROM device must be identified. This utility traverses the device tree

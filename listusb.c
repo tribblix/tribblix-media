@@ -15,8 +15,8 @@
  * If applicable, add the following below this CDDL HEADER, with the
  * fields enclosed by brackets "[]" replaced with your own identifying
  * information: Portions Copyright [yyyy] [name of copyright owner]
- * 
- * 
+ *
+ *
  * CDDL HEADER END
  */
 
@@ -35,8 +35,8 @@
 #include <limits.h>
 
 /*
- * Tinny utility to traverse the device tree and dump
- * all the minor cdrom nodes.
+ * Tiny utility to traverse the device tree and dump
+ * all the minor usb nodes.
  */
 
 static int
@@ -46,9 +46,9 @@ dump_minor(di_node_t node, di_minor_t  minor,  void *arg)
     int **prop;
 
     if ((di_minor_spectype(minor) == 0060000) &&
-        (di_prop_lookup_ints(DDI_DEV_T_ANY, node, "usb", prop) >= 0)) 
+        (di_prop_lookup_ints(DDI_DEV_T_ANY, node, "usb", prop) >= 0))
     {
-        if ((mnp = di_devfs_minor_path(minor)) != NULL) 
+        if ((mnp = di_devfs_minor_path(minor)) != NULL)
         {
             printf("/devices%s /devices%s,raw\n", mnp,mnp);
             di_devfs_path_free(mnp);
@@ -70,6 +70,6 @@ int main(void)
     di_walk_minor(root_node, NULL, 0, NULL, dump_minor);
     di_fini(root_node);
     sync();
-    
+
     return (0);
 }
